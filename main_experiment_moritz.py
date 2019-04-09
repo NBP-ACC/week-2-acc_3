@@ -2,7 +2,7 @@ import pygame
 import sys
 import csv
 import random
-from parameter_list import *
+from parameter_list_moritz import *  #TODO change back to 'parameter_list'
 clock = pygame.time.Clock()
 
 def draw_stimulus(trialType):
@@ -140,7 +140,7 @@ def experiment(subID):
 
 if __name__ == "__main__":
     #Fill this before start of the experiment
-    subID = 22250904 # TODO ID of the subject
+    subID = 12121212 # TODO ID of the subject
     dataFile = experiment(subID)
     print('*'*30)
     print('Writing in data file: Sub{}.csv'.format(subID))
