@@ -51,10 +51,12 @@ FONTSIZE = 60
 # Set number of trials in the experiment
 # How should you name the variable?
 # TODO
+NUMTRIAL = 100  # total number of trials
 
 # Set number of nogo trials in the experiment
 # How should you name the variable?
 # TODO
+PCT_NOGO = 0.2  # percentage of nogo trials
 
 # Set the time interval in seconds of the delay
 # from end of trial n and beginning of trial n+1
@@ -71,3 +73,6 @@ FPS = 60
 # where the experiment data for each subject is saved
 # before creating it check if the directory 'Data' already exists
 # TODO
+PATH = os.getcwd() + '/Data'
+if not os.path.isdir(PATH):
+    os.mkdir(PATH)

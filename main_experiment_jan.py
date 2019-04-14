@@ -1,9 +1,9 @@
-import pygame
-import sys
+import datetime
 import csv
 import random
-from parameter_list import *
+from parameter_list_jan import *
 clock = pygame.time.Clock()
+
 
 def draw_stimulus(trialType):
     """
@@ -18,6 +18,7 @@ def draw_stimulus(trialType):
     else:
         SCREEN.fill(BG_COLOR)
         pygame.draw.circle(SCREEN,NOGO_COLOR, [Cx, Cy], RADIUS, 0)
+
 
 def message_display(text):
     """
@@ -51,8 +52,7 @@ def message_display(text):
         return 1
 
 
-
-#draw fixation cross
+# draw fixation cross
 def draw_fixation():
     """
     Function to draw fixation cross based on the parameters listed in
@@ -62,30 +62,45 @@ def draw_fixation():
     pygame.draw.line(SCREEN,WHITE, VLINE[0], VLINE[1],VLINE[2])
     pygame.draw.line(SCREEN,WHITE, HLINE[0], HLINE[1],HLINE[2])
 
+
 def fill_background():
     SCREEN.fill(BG_COLOR)
 
-#write the data into csv file
-def writeData(datalist, subID):
+
+# We use this function to generate the filename depending on the subID
+# e.g., to check before starting the experiment if there has already been a subject with this ID
+def csv_filename(subID):
+    return "Sub{}.csv".format(subID)
+
+
+def csv_filepath(subID):
+    return os.path.join(DATADIR, csv_filename(subID))
+
+
+# Renamed writeData to write_data. Please stick to your own naming conventions
+def write_data(datalist, subID):
     """
     Function to write the list of responses to a csv dataFile
     """
-    # create a csvfile for each subject and name it: Sub[subID].csv
-    # add a header ('SubjectID','StimulusType','response','RT') to the csvfile
-    # and write each entry of datalist to a single row
-    # TODO
+    data_filepath = csv_filepath(subID)
+    file_existed = os.path.isfile(data_filepath)
+    with open(data_filepath, mode='a+') as file:
+        writer = csv.writer(file)
+        if not file_existed:
+            writer.writerow(['SubjectID', 'StimulusType', 'response', 'RT'])
+        writer.writerows(datalist)
 
 
 ######                 main experiment loop            ##########
 def experiment(subID):
-    #List where all the repsonses are stored
+    # List where all the repsonses are stored
     dataFile = []
     pygame.mouse.set_visible(False)
     stimuli_list = [1]*int(NUMTRIAL- NUMTRIAL*PCT_NOGO)
     nogo_trials = [0]*int(NUMTRIAL*PCT_NOGO)
     stimuli_list.extend(nogo_trials)
     random.shuffle(stimuli_list)
-    #Flag to check when the experiment loop ends
+    # Flag to check when the experiment loop ends
     done = False
     while not done:
         text = 'Only press SPACE when GREEN circle is shown. Press c to continue'
@@ -98,16 +113,16 @@ def experiment(subID):
                 draw_fixation()
                 pygame.display.flip()
                 pygame.time.wait(500) # Display fixation cross for 500 milliseconds
-                #clear event buffer so they are not misunderstood as responses
+                # clear event buffer so they are not misunderstood as responses
                 pygame.event.clear(pygame.KEYDOWN)
-                #show stimulus and get RT and response
+                # show stimulus and get RT and response
                 draw_stimulus(stim)
                 pygame.display.flip()
                 # get time at which stimulus is shown
                 start = pygame.time.get_ticks()
                 # check for events
-                countdown_check = pygame.USEREVENT+1 #custom event to track counter
-                pygame.time.set_timer(countdown_check, 1000) # timer that tracks counter every 1000ms
+                countdown_check = pygame.USEREVENT+1  # custom event to track counter
+                pygame.time.set_timer(countdown_check, 1000)  # timer that tracks counter every 1000ms
                 while countdown > 0 and response == 0:
                     clock.tick(FPS)
                     for event in pygame.event.get():
@@ -122,25 +137,31 @@ def experiment(subID):
                         if event.type == pygame.KEYDOWN:
                             if event.key == pygame.K_SPACE:
                                 # Time elapsed from stimulus to button press
-                                RT = # TODO
-                                response = # TODO
+                                end = pygame.time.get_ticks()
+                                RT = end-start
+                                # We assign 1 here because K_SPACE was pressed
+                                response = 1
 
-                fill_background()# clear the screen
+                fill_background()  # clear the screen
                 pygame.display.flip()
                 pygame.time.wait(TRIALINTERVAL)
-                dataFile.append([subID, stim, response, RT]) #append the data to the datafile
+                dataFile.append([subID, stim, response, RT])  # append the data to the datafile
 
         done = True
 
     return dataFile
 
+
 if __name__ == "__main__":
-    #Fill this before start of the experiment
-    subID = # TODO ID of the subject
+    # Fill this before start of the experiment
+    subID = None  # TODO ID of the subject
+
+    if subID is None:
+        subID = '{:%Y%m%d%H%M}'.format(datetime.datetime.now())
     dataFile = experiment(subID)
     print('*'*30)
     print('Writing in data file: Sub{}.csv'.format(subID))
     print('*'*30)
-    writeData(dataFile, subID)
+    write_data(dataFile, subID)
     pygame.quit()
     quit()
